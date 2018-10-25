@@ -19,7 +19,7 @@ function queryStatuses() {
             }
         })
         .catch(error => {
-            addToStatusBox(error.message);
+            addToStatusBox('Failed to update log: ' + error.message);
         })
 }
 

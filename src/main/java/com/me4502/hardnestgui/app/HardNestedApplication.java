@@ -2,6 +2,7 @@ package com.me4502.hardnestgui.app;
 
 import static spark.Spark.get;
 import static spark.Spark.port;
+import static spark.Spark.post;
 import static spark.Spark.redirect;
 import static spark.Spark.staticFiles;
 
@@ -77,6 +78,8 @@ public class HardNestedApplication {
                 return badRequest(res, "Failed to get log: " + e.getMessage());
             }
         });
+        post("/start_application/", (req, res) -> gson.toJson(Map.of("error", "Not Implemented")));
+        get("/get_application_state/", (req, res) -> gson.toJson(Map.of("error", "Not Implemented")));
     }
 
     public static HardNestedApplication getInstance() {

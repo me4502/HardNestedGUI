@@ -34,7 +34,7 @@ gulp.task('transpile', function() {
 
 gulp.task('copy_html', function() {
     return gulp.src(['html/*.html'])
-        .pipe(gulp.dest("../src/main/resources/static/html"))
+        .pipe(gulp.dest("../src/main/resources/static"))
         .pipe(browserSync.stream());
 });
 

@@ -23,7 +23,6 @@ dependencies {
 
     // Web
     compile "com.sparkjava:spark-core:2.7.2"
-    compile "com.sparkjava:spark-template-freemarker:2.7.1"
 
     // Logging
     compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.25'

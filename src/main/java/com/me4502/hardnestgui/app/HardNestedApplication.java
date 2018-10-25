@@ -1,18 +1,16 @@
 package com.me4502.hardnestgui.app;
 
-import static freemarker.template.Configuration.VERSION_2_3_26;
 import static spark.Spark.get;
 import static spark.Spark.port;
+import static spark.Spark.redirect;
 import static spark.Spark.staticFiles;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import freemarker.template.Configuration;
-import spark.ModelAndView;
 import spark.Response;
-import spark.template.freemarker.FreeMarkerEngine;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 
 public class HardNestedApplication {
@@ -23,6 +21,8 @@ public class HardNestedApplication {
 
     // Gson
     private Gson gson = new GsonBuilder().create();
+
+    private List<String> statusMessages = List.of();
 
     public void load() throws IOException {
 
@@ -55,22 +55,24 @@ public class HardNestedApplication {
         }
 
         // Setup routes
-        get("/", (request, response)
-                -> render(Map.of(), "index.html"));
-    }
-
-    /**
-     * Helper method to render Freemarker template files.
-     *
-     * @param model The model
-     * @param templatePath The template path
-     * @return The rendered template
-     */
-    private static String render(Map<String, Object> model, String templatePath) {
-        freemarker.template.Configuration config = new Configuration(VERSION_2_3_26);
-        config.setClassForTemplateLoading(HardNestedApplication.class, "/static/html/");
-
-        return new FreeMarkerEngine(config).render(new ModelAndView(model, templatePath));
+        redirect.get("/", "/index.html");
+        get("/status_messages/:lastMessage", (req, res) -> {
+            String lastMessage = req.params("lastMessage");
+            try {
+                int lastMessageNum = Integer.parseInt(lastMessage);
+                if (lastMessageNum < 0 || lastMessageNum > statusMessages.size()) {
+                    return gson.toJson(Map.of("message_id", lastMessageNum, "messages", List.of()));
+                }
+                return gson.toJson(
+                        Map.of(
+                                "message_id", statusMessages.size(),
+                                "messages", statusMessages.subList(lastMessageNum, statusMessages.size()
+                        )
+                ));
+            } catch (Exception e) {
+                return badRequest(res, "Last message was invalid.");
+            }
+        });
     }
 
     public static HardNestedApplication getInstance() {

@@ -1,12 +1,12 @@
 import {API_URL, checkForErrors} from "./util";
 import {addToStatusBox} from "./status_box";
+import {GRID_IDs} from "./sector_grid";
 
 let running = false;
 const startButton = document.querySelector("#start-button");
 
 export function runApplication() {
-    running = true;
-    startButton.classList.add('disabled');
+    disableUI();
     window.fetch(API_URL + 'start_application/', {
         method: 'POST',
         body: {
@@ -41,9 +41,20 @@ function queryStatus() {
         })
 }
 
+function disableUI() {
+    running = true;
+    startButton.classList.add('disabled');
+    for (let id in GRID_IDs) {
+        document.getElementById(GRID_IDs[id]).disabled = true;
+    }
+}
+
 function resetState() {
     running = false;
     startButton.classList.remove('disabled');
+    for (let id in GRID_IDs) {
+        document.getElementById(GRID_IDs[id]).disabled = false;
+    }
 }
 
 setInterval(queryStatus, 2000);

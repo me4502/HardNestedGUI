@@ -23,5 +23,4 @@ function queryStatuses() {
         })
 }
 
-addToStatusBox("Connecting!");
 window.setInterval(queryStatuses, 1000);

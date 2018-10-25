@@ -1,4 +1,4 @@
-import {API_URL} from "./util";
+import {API_URL, checkForErrors} from "./util";
 
 const statusBox = document.querySelector("#status-box");
 export let lastStatusMessage = 0;
@@ -11,6 +11,7 @@ function queryStatuses() {
     window.fetch(API_URL + 'status_messages/' + lastStatusMessage)
         .then(r => r.json())
         .then(json => {
+            checkForErrors(json);
             lastStatusMessage = json['message_id'];
             let messagesToAdd = json['messages'];
             for (let message in messagesToAdd) {

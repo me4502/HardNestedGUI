@@ -10,6 +10,7 @@ import com.google.gson.GsonBuilder;
 import spark.Response;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -22,7 +23,7 @@ public class HardNestedApplication {
     // Gson
     private Gson gson = new GsonBuilder().create();
 
-    private List<String> statusMessages = List.of();
+    private List<String> statusMessages = new ArrayList<>();
 
     public void load() throws IOException {
 
@@ -69,8 +70,11 @@ public class HardNestedApplication {
                                 "messages", statusMessages.subList(lastMessageNum, statusMessages.size()
                         )
                 ));
+            } catch (NumberFormatException e) {
+                return badRequest(res, "Last message was invalid. Must be a number.");
             } catch (Exception e) {
-                return badRequest(res, "Last message was invalid.");
+                e.printStackTrace();
+                return badRequest(res, "Failed to get log: " + e.getMessage());
             }
         });
     }

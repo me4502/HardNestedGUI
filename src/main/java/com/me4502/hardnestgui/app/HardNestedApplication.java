@@ -10,6 +10,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.me4502.hardnestgui.card.CardSector;
 import com.me4502.hardnestgui.card.CardStatus;
+import com.me4502.hardnestgui.json.StartPayload;
 import spark.Response;
 
 import java.io.IOException;
@@ -17,7 +18,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ThreadLocalRandom;
 
 public class HardNestedApplication {
 
@@ -83,7 +83,11 @@ public class HardNestedApplication {
                 return badRequest(res, "Failed to get log: " + e.getMessage());
             }
         });
-        post("/start_application/", (req, res) -> gson.toJson(Map.of("errors", "Not Implemented")));
+        post("/start_application/", (req, res) -> {
+            StartPayload body = gson.fromJson(req.body(), StartPayload.class);
+            body.keys.forEach((key, value) -> cardStatus.setSectorKey(CardSector.valueOf(key), value));
+            return gson.toJson(Map.of("errors", "Not Implemented"));
+        });
         get("/get_application_state/", (req, res) -> {
             Map<String, String> knownKeys = new HashMap<>();
             for (CardSector sector : CardSector.values()) {

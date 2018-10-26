@@ -34,4 +34,13 @@ export function setGridKey(grid, key) {
     document.getElementById(GRID_PREFIX + grid).value = key;
 }
 
+export function getGridKeys() {
+    let keys = {};
+    for (let id in GRID_IDs) {
+        let idName = GRID_IDs[id].replace(GRID_PREFIX, '');
+        keys[idName] = document.getElementById(GRID_IDs[id]).value;
+    }
+    return keys;
+}
+
 window.onload = setupGrid;

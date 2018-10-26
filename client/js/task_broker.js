@@ -1,6 +1,6 @@
 import {API_URL, checkForErrors} from "./util";
 import {addToStatusBox} from "./status_box";
-import {GRID_IDs, setGridKey} from "./sector_grid";
+import {getGridKeys, GRID_IDs, setGridKey} from "./sector_grid";
 
 let running = false;
 const startButton = document.querySelector("#start-button");
@@ -9,9 +9,9 @@ export function runApplication() {
     disableUI();
     window.fetch(API_URL + 'start_application/', {
         method: 'POST',
-        body: {
-
-        },
+        body: JSON.stringify({
+            "keys": getGridKeys()
+        }),
         headers:{
             'Content-Type': 'application/json'
         }

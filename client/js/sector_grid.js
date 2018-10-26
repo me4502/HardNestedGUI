@@ -16,11 +16,11 @@ function setupGrid() {
         for (let side in SECTOR_SIDES) {
             gridDom += `
                     <div class="col s2">
-                        <input id="${GRID_PREFIX}${i}${SECTOR_SIDES[side]}">
-                        <label for="${GRID_PREFIX}${i}${SECTOR_SIDES[side]}">${i}${SECTOR_SIDES[side]}</label>    
+                        <input id="${GRID_PREFIX}${SECTOR_SIDES[side]}${i}">
+                        <label for="${GRID_PREFIX}${SECTOR_SIDES[side]}${i}">${SECTOR_SIDES[side]}${i}</label>    
                     </div>
             `;
-            GRID_IDs.push(GRID_PREFIX + i + SECTOR_SIDES[side]);
+            GRID_IDs.push(GRID_PREFIX + SECTOR_SIDES[side] + i);
         }
         if (i % 3 === 2) {
             gridDom += '</div>';
@@ -28,6 +28,10 @@ function setupGrid() {
     }
 
     gridHolder.innerHTML = gridDom;
+}
+
+export function setGridKey(grid, key) {
+    document.getElementById(GRID_PREFIX + grid).value = key;
 }
 
 window.onload = setupGrid;

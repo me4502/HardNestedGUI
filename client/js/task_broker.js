@@ -1,6 +1,6 @@
 import {API_URL, checkForErrors} from "./util";
 import {addToStatusBox} from "./status_box";
-import {GRID_IDs} from "./sector_grid";
+import {GRID_IDs, setGridKey} from "./sector_grid";
 
 let running = false;
 const startButton = document.querySelector("#start-button");
@@ -34,6 +34,12 @@ function queryStatus() {
         .then(r => r.json())
         .then(json => {
             checkForErrors(json);
+            if ("update" in json) {
+                let updates = json["update"];
+                for (let key in updates) {
+                    setGridKey(key, updates[key]);
+                }
+            }
         })
         .catch(error => {
             addToStatusBox('Error occurred when querying application: ' + error.message);

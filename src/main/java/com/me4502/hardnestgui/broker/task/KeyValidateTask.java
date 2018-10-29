@@ -54,10 +54,18 @@ public class KeyValidateTask implements Task {
                 e.printStackTrace();
             }
             // TODO Scan output stream.
+            if (userEntered) {
+                foundKey = "Oof";
+            }
         }
 
         if (userEntered && foundKey == null) {
             throw new TaskException(this, "Invalid key for sector " + sector.name());
+        } else if (foundKey != null) {
+            if (!userEntered) {
+                HardNestedApplication.getInstance().addStatusMessage("Sector " + sector.name() + " is using default key of: " + foundKey);
+            }
+            status.setSectorKey(sector, foundKey);
         }
 
         currentSector ++;

@@ -8,6 +8,7 @@ import static spark.Spark.staticFiles;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.me4502.hardnestgui.broker.TaskBroker;
 import com.me4502.hardnestgui.card.CardSector;
 import com.me4502.hardnestgui.card.CardStatus;
 import com.me4502.hardnestgui.json.StartPayload;
@@ -31,9 +32,15 @@ public class HardNestedApplication {
     private List<String> statusMessages = new ArrayList<>();
     private CardStatus cardStatus = new CardStatus();
 
+    private TaskBroker taskBroker;
+
     public void load() throws IOException {
 
         loadWebServer();
+        Thread taskBrokerThread = new Thread(taskBroker = new TaskBroker());
+        taskBrokerThread.setName("Task Broker Thread");
+        taskBrokerThread.setDaemon(true);
+        taskBrokerThread.start();
     }
 
     /**
@@ -86,7 +93,9 @@ public class HardNestedApplication {
         post("/start_application/", (req, res) -> {
             StartPayload body = gson.fromJson(req.body(), StartPayload.class);
             body.keys.forEach((key, value) -> cardStatus.setSectorKey(CardSector.valueOf(key), value));
-            return gson.toJson(Map.of("errors", "Not Implemented"));
+            taskBroker.startTasks();
+            statusMessages.add("Started Running");
+            return "{}";
         });
         get("/get_application_state/", (req, res) -> {
             Map<String, String> knownKeys = new HashMap<>();
@@ -99,6 +108,14 @@ public class HardNestedApplication {
             cardStatus.resetKeys();
             return gson.toJson(Map.of("message", "Reset Keys!"));
         });
+    }
+
+    public CardStatus getCardStatus() {
+        return this.cardStatus;
+    }
+
+    public void addStatusMessage(String message) {
+        statusMessages.add(message);
     }
 
     public static HardNestedApplication getInstance() {

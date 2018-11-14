@@ -6,6 +6,7 @@ import com.me4502.hardnestgui.card.CardStatus;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Fills in any default keys, and validates custom entered keys.
@@ -27,6 +28,7 @@ public class KeyValidateTask implements Task {
     );
 
     private int currentSector = 0;
+    private int retries = 0;
 
     @Override
     public String getName() {
@@ -39,42 +41,70 @@ public class KeyValidateTask implements Task {
             return null; // We're done here.
         }
 
-        CardSector sector = CardSector.values()[currentSector];
-        CardStatus status = HardNestedApplication.getInstance().getCardStatus();
-        List<String> testKeys = status.getSectorKey(sector).map(List::of).orElse(DEFAULT_KEYS);
-        boolean userEntered = testKeys != DEFAULT_KEYS;
+        if (retries < 5) {
+            CardSector sector = CardSector.values()[currentSector];
+            CardStatus status = HardNestedApplication.getInstance().getCardStatus();
+            List<String> testKeys = status.getSectorKey(sector).map(List::of).orElse(DEFAULT_KEYS);
+            boolean userEntered = testKeys != DEFAULT_KEYS;
 
-        String foundKey = null;
+            HardNestedApplication.getInstance().addStatusMessage("Checking key for sector " + sector.name());
 
-        for (String key : testKeys) {
-            Process process = startProcess(sector, key);
-            try {
-                process.waitFor();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            // TODO Scan output stream.
-            if (userEntered) {
-                foundKey = "Oof";
-            }
-        }
+            String foundKey = null;
 
-        if (userEntered && foundKey == null) {
-            throw new TaskException(this, "Invalid key for sector " + sector.name());
-        } else if (foundKey != null) {
-            if (!userEntered) {
-                HardNestedApplication.getInstance().addStatusMessage("Sector " + sector.name() + " is using default key of: " + foundKey);
+            for (String key : testKeys) {
+                if (key.trim().isEmpty()) {
+                    continue;
+                }
+                Process process = startProcess(sector, key);
+                int retCode = -1;
+                try {
+                    retCode = process.waitFor();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                if (retCode > 1) {
+                    retries++;
+                    if (retries < 5) {
+                        HardNestedApplication.getInstance().addStatusMessage("An error occurred in sector " + sector.name() + ". Retrying.");
+                    }
+                    return this;
+                }
+                if (userEntered) {
+                    foundKey = retCode == 0 ? key : null;
+                    if (retCode == 0) {
+                        break;
+                    }
+                } else if (retCode == 0) {
+                    foundKey = key;
+                    break;
+                }
             }
-            status.setSectorKey(sector, foundKey);
+
+            if (userEntered && foundKey == null) {
+                throw new TaskException(this, "Invalid key for sector " + sector.name());
+            } else if (foundKey != null) {
+                if (!userEntered) {
+                    HardNestedApplication.getInstance().addStatusMessage("Sector " + sector.name() + " is using default key of: " + foundKey);
+                }
+                status.setSectorKey(sector, foundKey);
+            }
         }
 
         currentSector ++;
+        retries = 0;
         return this;
+    }
+
+    private int sectorToBlock(byte sector) {
+        return sector * 4;
     }
 
     private Process startProcess(CardSector sector, String key) throws TaskException {
         try {
-            return new ProcessBuilder("").start();
+            var builder = new ProcessBuilder("./key_tester", key,
+                    String.valueOf(sectorToBlock(sector.getNumber())), String.valueOf(sector.getSide()));
+            System.out.println(String.join(" ", builder.command()));
+            return builder.start();
         } catch (IOException e) {
             e.printStackTrace();
             throw new TaskException(this, "Failed to start process for sector " + sector.name());

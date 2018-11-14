@@ -16,7 +16,7 @@ function setupGrid() {
         for (let side in SECTOR_SIDES) {
             gridDom += `
                     <div class="col s2">
-                        <input id="${GRID_PREFIX}${SECTOR_SIDES[side]}${i}">
+                        <input id="${GRID_PREFIX}${SECTOR_SIDES[side]}${i}" class="grid-text">
                         <label for="${GRID_PREFIX}${SECTOR_SIDES[side]}${i}">${SECTOR_SIDES[side]}${i}</label>    
                     </div>
             `;

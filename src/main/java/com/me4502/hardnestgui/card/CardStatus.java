@@ -33,8 +33,9 @@ public class CardStatus {
      * @param sectorKey The key
      */
     public void setSectorKey(CardSector sector, String sectorKey) {
-        if (sectorKey == null || sectorKey.trim().isEmpty()) {
+        if (sectorKey == null || sectorKey.trim().isBlank()) {
             sectorKeys.remove(sector);
+            return;
         }
         sectorKeys.put(sector, sectorKey);
     }

@@ -37,4 +37,8 @@ public class TaskBroker implements Runnable {
             }
         }
     }
+
+    public boolean isRunning() {
+        return taskQueue.size() > 0 || currentTask != null;
+    }
 }

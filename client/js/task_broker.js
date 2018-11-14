@@ -44,6 +44,10 @@ function queryStatus() {
                 addToStatusBox("Run failed: " + json['failMessage']);
                 resetState();
             }
+            if ("complete" in json) {
+                addToStatusBox("Cracking complete.");
+                resetState();
+            }
         })
         .catch(error => {
             addToStatusBox('Error occurred when querying application: ' + error.message);

@@ -98,14 +98,21 @@ public class HardNestedApplication {
         });
         get("/get_application_state/", (req, res) -> {
             Map<String, String> knownKeys = new HashMap<>();
+            int knownKeyCount = 0;
             for (CardSector sector : CardSector.values()) {
                 knownKeys.put(sector.name(), cardStatus.getSectorKey(sector).orElse(""));
+                if (cardStatus.getSectorKey(sector).isPresent()) {
+                    knownKeyCount ++;
+                }
             }
             var map = new HashMap<String, Object>();
             map.put("update", knownKeys);
             if (failError != null) {
                 map.put("failMessage", failError);
                 failError = null;
+            }
+            if (knownKeyCount == CardSector.values().length) {
+                map.put("complete", "true");
             }
             return gson.toJson(map);
         });

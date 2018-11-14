@@ -40,6 +40,10 @@ function queryStatus() {
                     setGridKey(key, updates[key]);
                 }
             }
+            if ("failMessage" in json) {
+                addToStatusBox("Run failed: " + json['failMessage']);
+                resetState();
+            }
         })
         .catch(error => {
             addToStatusBox('Error occurred when querying application: ' + error.message);

@@ -31,11 +31,11 @@ public class HardNestedApplication {
 
     private List<String> statusMessages = new ArrayList<>();
     private CardStatus cardStatus = new CardStatus();
+    private String failError;
 
     private TaskBroker taskBroker;
 
     public void load() throws IOException {
-
         loadWebServer();
         Thread taskBrokerThread = new Thread(taskBroker = new TaskBroker());
         taskBrokerThread.setName("Task Broker Thread");
@@ -80,9 +80,9 @@ public class HardNestedApplication {
                 return gson.toJson(
                         Map.of(
                                 "message_id", statusMessages.size(),
-                                "messages", statusMessages.subList(lastMessageNum, statusMessages.size()
+                                "messages", statusMessages.subList(lastMessageNum, statusMessages.size())
                         )
-                ));
+                );
             } catch (NumberFormatException e) {
                 return badRequest(res, "Last message was invalid. Must be a number.");
             } catch (Exception e) {
@@ -94,15 +94,20 @@ public class HardNestedApplication {
             StartPayload body = gson.fromJson(req.body(), StartPayload.class);
             body.keys.forEach((key, value) -> cardStatus.setSectorKey(CardSector.valueOf(key), value));
             taskBroker.startTasks();
-            statusMessages.add("Started Running");
-            return "{}";
+            return gson.toJson(Map.of("message", "Started Running"));
         });
         get("/get_application_state/", (req, res) -> {
             Map<String, String> knownKeys = new HashMap<>();
             for (CardSector sector : CardSector.values()) {
                 knownKeys.put(sector.name(), cardStatus.getSectorKey(sector).orElse(""));
             }
-            return gson.toJson(Map.of("update", knownKeys));
+            var map = new HashMap<String, Object>();
+            map.put("update", knownKeys);
+            if (failError != null) {
+                map.put("failMessage", failError);
+                failError = null;
+            }
+            return gson.toJson(map);
         });
         post("/reset_keys/", (req, res) -> {
             cardStatus.resetKeys();
@@ -116,6 +121,10 @@ public class HardNestedApplication {
 
     public void addStatusMessage(String message) {
         statusMessages.add(message);
+    }
+
+    public void failWithError(String message) {
+        this.failError = message;
     }
 
     public static HardNestedApplication getInstance() {

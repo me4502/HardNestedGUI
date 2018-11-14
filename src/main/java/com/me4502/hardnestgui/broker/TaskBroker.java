@@ -33,7 +33,7 @@ public class TaskBroker implements Runnable {
                 e.printStackTrace();
                 taskQueue.clear();
                 currentTask = null;
-                HardNestedApplication.getInstance().addStatusMessage("Task '" + e.getTask().getName() + "' failed with message: " + e.getMessage());
+                HardNestedApplication.getInstance().failWithError("Task '" + e.getTask().getName() + "' failed with message: " + e.getMessage());
             }
         }
     }
